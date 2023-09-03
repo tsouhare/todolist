@@ -4,6 +4,8 @@ import {
   CheckCircleIcon,
   CheckHoverIcon,
 } from 'assets/images';
+import clsx from 'clsx'; //加入 clsx 套件，切換 class(要先安裝clsx，下載指令：npm i clsx@1.2.1)
+import React, { useRef } from 'react';
 
 const StyledTaskItem = styled.div`
   min-height: 52px;
@@ -100,18 +102,49 @@ const StyledTaskItem = styled.div`
   }
 `;
 
-const TodoItem = () => {
+const TodoItem = ({ todo, onSave, onDelete, onToggleDone, onChangeMode }) => {
+  //加入 props { todo 每一項todo資料 , onSave 項目資料可編擊，按Enter可儲存, onDelete 刪除一項todo資料, onToggleDone 確認是否完成打勾, onChangeMode 項目點兩下可編輯，監聽是否處在編輯模式 }
+  const inputRef = useRef(null);
+  const handleKeyDown = (event) => {
+    if (inputRef.current.value.length > 0 && event.key === 'Enter') {
+      onSave?.({ id: todo.id, title: inputRef.current.value });
+    }
+    if (event.key === 'Escape') {
+      onChangeMode?.({ id: todo.id, isEdit: false });
+    }
+  };
   return (
-    <StyledTaskItem>
+    //加入 clsx ，寫在 className：clsx('預設class', { 要切換的class : 切換的條件 })
+    <StyledTaskItem
+      className={clsx('', { done: todo.isDone, edit: todo.isEdit })}
+    >
       <div className="task-item-checked">
-        <span className="icon icon-checked" />
+        <span
+          className="icon icon-checked"
+          onClick={() => {
+            onToggleDone?.(todo.id);
+          }}
+        />
       </div>
-      <div className="task-item-body">
-        <span className="task-item-body-text">todo</span>
-        <input className="task-item-body-input" />
+      <div
+        className="task-item-body"
+        onDoubleClick={() => onChangeMode?.({ id: todo.id, isEdit: true })}
+      >
+        <span className="task-item-body-text">{todo.title}</span>
+        <input
+          ref={inputRef}
+          className="task-item-body-input"
+          onKeyDown={handleKeyDown}
+          defaultValue={todo.title}
+        />
       </div>
       <div className="task-item-action ">
-        <button className="btn-reset btn-destroy icon"></button>
+        <button
+          className="btn-reset btn-destroy icon"
+          onClick={() => {
+            onDelete?.(todo.id);
+          }}
+        ></button>
       </div>
     </StyledTaskItem>
   );

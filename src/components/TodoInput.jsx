@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import clsx from 'clsx';
 
 const StyledAddTodoContainer = styled.div`
   min-height: 52px;
@@ -67,15 +68,35 @@ const StyledAddTodoActionContainer = styled.div`
     }
   }
 `;
-const TodoInput = () => {
+const TodoInput = ({ inputValue, onChange, onKeyDown, onAddTodo }) => {
+  // 加入 props { inputValue 外部加入的值, onChange 監測值的變化, onKeyDown 使用鍵盤Enter可加入todo，所以要再監聽鍵盤動作, onAddTodo 除了鍵盤Enter外，也可點擊按鈕新增，故監聽按鈕 }
   return (
-    <StyledAddTodoContainer>
+    <StyledAddTodoContainer
+      className={clsx('', { active: inputValue.length > 0 })}
+    >
       <StyledLabelIcon className="icon" htmlFor="add-todo-input" />
       <StyledInputContainer>
-        <input id="add-todo-input" type="text" placeholder="新增工作" />
+        <input
+          id="add-todo-input"
+          type="text"
+          placeholder="新增工作"
+          value={inputValue}
+          onChange={(event) => {
+            onChange?.(event.target.value);
+          }} // onChange 後面加問號?為確認所傳入值可運行父元件設定的onChange，即handleAddTodo可運行才給值。避免發生錯誤。
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              onKeyDown?.();
+            }
+          }}
+        />
       </StyledInputContainer>
-      <StyledAddTodoActionContainer>
-        <button className="btn-reset">新增</button>
+      <StyledAddTodoActionContainer
+        className={clsx('', { active: inputValue.length > 0 })}
+      >
+        <button className="btn-reset" onClick={() => onAddTodo?.()}>
+          新增
+        </button>
       </StyledAddTodoActionContainer>
     </StyledAddTodoContainer>
   );
